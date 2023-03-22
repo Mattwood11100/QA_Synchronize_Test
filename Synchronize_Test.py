@@ -34,17 +34,43 @@ print(f"Common:\t\t\t\t{comparison.common}\n"
 # print("Done")
 
 
-# TODO: Compare the contents of the two folders
+# Compare the contents of the two folders
 # Comparing the first layer of the two directories
-firstComp = filecmp.dircmp(sourceDir, destinationDir)
+comp = filecmp.dircmp(sourceDir, destinationDir)
 
-# TODO: If the destination directory is empty
-if len(firstComp.right_only) == 0:
+# If the destination directory is empty, deep copy all the contents of the source folder to the destination folder
+if len(comp.common) == 0 and len(comp.right_only) == 0:
     shutil.copytree(sourceDir, destinationDir, dirs_exist_ok=True)
+    print(f"Copied contents of source to destination\n")
+
+# Deep copy the file only in the source directory to the destination directory
+elif len(comp.left_only) != 0:
+    for file in comp.left_only:
+        isFile = os.path.isfile(os.path.join(sourceDir, file))
+        isDirc = os.path.isdir(os.path.join(sourceDir, file))
+        # print(f"is File:\t{isFile}\n"
+        #       f"is Dirc:\t{isDirc}\n")
+        if isFile:
+            shutil.copy2(os.path.join(sourceDir, file), destinationDir)
+            print(f"Copied the single file\n")
+        elif isDirc:
+            shutil.copytree(os.path.join(sourceDir, file), os.path.join(destinationDir, file))
+            print(f"Copied the single folder\n")
 
 
-# TODO: Deep copy the file only in the source directory to the destination directory
 # TODO: Remove the files that are only in the destination directory
+elif len(comp.right_only) != 0:
+    for file in comp.right_only:
+        isFile = os.path.isfile(os.path.join(destinationDir, file))
+        isDirc = os.path.isdir(os.path.join(destinationDir, file))
+        # print(f"is File:\t{isFile}\n"
+        #       f"is Dirc:\t{isDirc}\n")
+        if isFile:
+            os.remove(os.path.join(destinationDir, file))
+            print(f"Removed the single file\n")
+        # elif isDirc:
+        #     shutil.rmtree(os.path.join(destinationDir, file))
+        #     print(f"Removed the single folder\n")
 
 
 # TODO: Compare the common files and determine if the file is a file or directory, if there are differences between the files then
